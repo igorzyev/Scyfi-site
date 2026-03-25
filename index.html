@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Igor Zuev — Game Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --bg2: #0d1318;
+    --bg3: #111820;
+    --panel: #0a1520;
+    --border: #1a3040;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7fff6f;
+    --text: #c8dde8;
+    --text-dim: #5a7a8a;
+    --text-bright: #eaf6ff;
+    --red: #ff3d5a;
+    --yellow: #ffd23f;
+    --grid-color: rgba(0, 180, 255, 0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRID BACKGROUND ─────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── SCANLINES ────────────────────────────────── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── LAYOUT ───────────────────────────────────── */
+  #app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ─── NAVBAR ───────────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem;
+    height: 60px;
+    background: rgba(8,12,16,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+  }
+
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent2); }
+
+  .nav-links { display: flex; gap: 0; }
+
+  .nav-links a {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    padding: 0 1rem;
+    height: 60px;
+    display: flex; align-items: center;
+    border-left: 1px solid var(--border);
+    transition: color 0.2s, background 0.2s;
+    position: relative;
+    text-transform: uppercase;
+  }
+  .nav-links a:last-child { border-right: 1px solid var(--border); }
+  .nav-links a:hover, .nav-links a.active {
+    color: var(--accent);
+    background: rgba(0,212,255,0.06);
+  }
+  .nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  /* ─── PAGE SYSTEM ──────────────────────────────── */
+  .page { display: none; padding-top: 60px; min-height: 100vh; }
+  .page.active { display: block; }
+
+  /* ─── HERO / ABOUT ─────────────────────────────── */
+  .hero {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-content { max-width: 1100px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+
+  .hero-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent2);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .hero-tag::before { content: '▶'; font-size: 0.5rem; }
+
+  .hero h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent3);
+    letter-spacing: 0.12em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  .btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.7rem 1.5rem;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    transition: all 0.2s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .btn:hover { background: var(--accent); color: var(--bg); }
+  .btn-orange { border-color: var(--accent2); color: var(--accent2); }
+  .btn-orange:hover { background: var(--accent2); color: var(--bg); }
+  .btn-green { border-color: var(--accent3); color: var(--accent3); }
+  .btn-green:hover { background: var(--accent3); color: var(--bg); }
+
+  /* ─── STAT CARD ────────────────────────────────── */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 1.2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+  }
+  .stat-card.orange::before { background: var(--accent2); }
+  .stat-card.green::before { background: var(--accent3); }
+  .stat-card.red::before { background: var(--red); }
+
+  .stat-number {
+    font-family: 'Orbitron', monospace;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text-bright);
+  }
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 0.2rem;
+  }
+
+  /* ─── SECTION LAYOUT ───────────────────────────── */
+  .section { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
+
+  .section-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .section-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    padding: 0.2rem 0.5rem;
+  }
+  .section-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+  /* ─── CV PAGE ──────────────────────────────────── */
+  .cv-grid { display: grid; grid-template-columns: 300px 1fr; gap: 2rem; align-items: start; }
+
+  .cv-sidebar {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    position: sticky;
+    top: 80px;
+  }
+
+  .cv-avatar {
+    width: 100px; height: 100px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    background: var(--bg3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem;
+    margin: 0 auto 1.5rem;
+    position: relative;
+  }
+  .cv-avatar::after {
+    content: '●';
+    position: absolute;
+    bottom: 4px; right: 4px;
+    font-size: 0.6rem;
+    color: var(--accent3);
+  }
+
+  .cv-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    text-align: center;
+    margin-bottom: 0.3rem;
+  }
+  .cv-title-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--accent);
+    text-align: center;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+  }
+
+  .cv-contact-item {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cv-contact-item:last-child { border-bottom: none; }
+  .cv-contact-item a { color: var(--accent); text-decoration: none; }
+  .cv-contact-item a:hover { color: var(--text-bright); }
+  .cv-contact-icon { color: var(--accent2); min-width: 14px; text-align: center; font-size: 0.8rem; }
+
+  .skill-bar-group { margin-top: 1.5rem; }
+  .skill-bar-label {
+    display: flex; justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+  }
+  .skill-bar-track {
+    height: 4px;
+    background: var(--border);
+    margin-bottom: 0.75rem;
+    position: relative;
+  }
+  .skill-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    position: relative;
+    transition: width 1s ease;
+  }
+  .skill-bar-fill::after {
+    content: '';
+    position: absolute; right: 0; top: -2px;
+    width: 8px; height: 8px;
+    background: var(--text-bright);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+
+  .lang-tag {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    margin: 0.2rem 0.2rem 0 0;
+    letter-spacing: 0.05em;
+  }
+  .lang-tag.active { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── TIMELINE ─────────────────────────────────── */
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 0.5rem; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, var(--accent), var(--border), transparent);
+  }
+
+  .timeline-item { position: relative; margin-bottom: 2.5rem; }
+  .timeline-dot {
+    position: absolute; left: -1.6rem; top: 0.35rem;
+    width: 12px; height: 12px;
+    border: 2px solid var(--accent);
+    background: var(--bg);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+
+  .timeline-company {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    color: var(--accent2);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.2rem;
+  }
+  .timeline-role {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 0.2rem;
+  }
+  .timeline-date {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-bottom: 0.8rem;
+  }
+  .timeline-list { list-style: none; }
+  .timeline-list li {
+    font-size: 0.92rem;
+    color: var(--text);
+    padding: 0.25rem 0;
+    display: flex; gap: 0.5rem;
+  }
+  .timeline-list li::before { content: '▸'; color: var(--accent); flex-shrink: 0; }
+
+  /* ─── ABOUT PAGE ───────────────────────────────── */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .about-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 1.8rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .about-card:hover { border-color: var(--accent); }
+  .about-card-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+  .about-card h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+  }
+  .about-card p { font-size: 0.95rem; color: var(--text); line-height: 1.7; font-weight: 300; }
+
+  .interest-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+  .chip {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .chip:nth-child(odd) { border-color: rgba(0,212,255,0.3); color: var(--accent); }
+
+  /* ─── DEV LOG PAGE ─────────────────────────────── */
+  .devlog-entry {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    transition: border-left-color 0.3s;
+    position: relative;
+  }
+  .devlog-entry:nth-child(2n) { border-left-color: var(--accent2); }
+  .devlog-entry:nth-child(3n) { border-left-color: var(--accent3); }
+  .devlog-entry:hover { background: rgba(0,212,255,0.03); }
+
+  .devlog-meta {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .devlog-date {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+  .devlog-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.5rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tag-design { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+  .tag-balance { background: rgba(255,107,53,0.1); color: var(--accent2); border: 1px solid rgba(255,107,53,0.2); }
+  .tag-ux { background: rgba(127,255,111,0.1); color: var(--accent3); border: 1px solid rgba(127,255,111,0.2); }
+  .tag-research { background: rgba(255,210,63,0.1); color: var(--yellow); border: 1px solid rgba(255,210,63,0.2); }
+
+  .devlog-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+  .devlog-body { font-size: 0.92rem; color: var(--text); line-height: 1.75; font-weight: 300; }
+  .devlog-metric {
+    margin-top: 1rem;
+    padding: 0.6rem 1rem;
+    background: rgba(0,0,0,0.3);
+    border-left: 2px solid var(--accent3);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent3);
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── PORTFOLIO CARDS ──────────────────────────── */
+  .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+
+  .project-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    cursor: default;
+  }
+  .project-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 30px rgba(0,212,255,0.1);
+  }
+
+  .project-card-header {
+    padding: 1.2rem 1.5rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .project-card-type {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent2);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .project-card h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    color: var(--text-bright);
+    letter-spacing: 0.05em;
+  }
+  .project-status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.58rem;
+    padding: 0.2rem 0.5rem;
+    letter-spacing: 0.06em;
+  }
+  .status-live { background: rgba(127,255,111,0.1); color: var(--accent3); border: 1px solid rgba(127,255,111,0.3); }
+  .status-dev { background: rgba(255,210,63,0.1); color: var(--yellow); border: 1px solid rgba(255,210,63,0.3); }
+
+  .project-card-body { padding: 1.2rem 1.5rem; }
+  .project-card-desc { font-size: 0.9rem; color: var(--text); line-height: 1.7; font-weight: 300; margin-bottom: 1rem; }
+
+  .principle-list { list-style: none; margin-bottom: 1rem; }
+  .principle-list li {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    padding: 0.3rem 0;
+    display: flex; gap: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .principle-list li strong { color: var(--accent); font-weight: 600; font-size: 0.82rem; }
+  .principle-list li::before { content: '◆'; color: var(--accent2); font-size: 0.5rem; padding-top: 0.25rem; flex-shrink: 0; }
+
+  .metric-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+  .metric {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    padding: 0.2rem 0.6rem;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .metric span { color: var(--accent3); margin-left: 0.3rem; }
+
+  /* ─── RPG LEVELS ────────────────────────────────── */
+  .rpg-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .rpg-card-top {
+    display: grid; grid-template-columns: 80px 1fr auto;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    gap: 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .rpg-card-top:hover { background: rgba(0,212,255,0.03); }
+
+  .rpg-level-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    color: var(--accent);
+    text-align: center;
+    border: 1px solid var(--accent);
+    padding: 0.4rem;
+    position: relative;
+  }
+  .rpg-level-num {
+    font-size: 1.5rem;
+    font-weight: 900;
+    display: block;
+    line-height: 1;
+  }
+
+  .rpg-card-title { font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text-bright); }
+  .rpg-card-meta { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+  .expand-icon {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    transition: transform 0.3s;
+  }
+  .rpg-card.open .expand-icon { transform: rotate(180deg); }
+
+  .rpg-card-body {
+    display: none;
+    padding: 0 1.5rem 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.2rem;
+  }
+  .rpg-card.open .rpg-card-body { display: block; }
+
+  /* ─── VIDEO PAGE ────────────────────────────────── */
+  .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+  .video-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .video-card:hover { border-color: var(--accent); }
+  .video-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: var(--bg3);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .video-thumb-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--bg3) 0%, var(--panel) 100%);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 0.5rem;
+  }
+  .play-icon {
+    width: 50px; height: 50px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    color: var(--accent);
+    transition: all 0.3s;
+  }
+  .video-card:hover .play-icon { background: var(--accent); color: var(--bg); }
+  .video-game-name { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.1em; }
+  .video-card-info { padding: 1rem 1.2rem; }
+  .video-card-title { font-size: 0.95rem; font-weight: 600; color: var(--text-bright); margin-bottom: 0.3rem; }
+  .video-card-meta { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: var(--text-dim); }
+
+  .video-note {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--panel);
+    border: 1px dashed var(--border);
+    margin-top: 2rem;
+  }
+  .video-note p { font-size: 0.9rem; color: var(--text-dim); font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; line-height: 1.8; }
+  .video-note a { color: var(--accent); text-decoration: none; }
+
+  /* ─── FOOTER ────────────────────────────────────── */
+  footer {
+    margin-top: auto;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* ─── ANIMATE ───────────────────────────────────── */
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+  .cursor { animation: blink 1s step-end infinite; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .page.active .hero-content > * { animation: fadeUp 0.5s ease forwards; }
+  .page.active .hero-content > *:nth-child(2) { animation-delay: 0.15s; }
+
+  /* ─── PROGRESS BAR ──────────────────────────────── */
+  .hud-bar {
+    display: flex; gap: 0.2rem; align-items: center;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-dim);
+    margin-top: 1.5rem;
+  }
+  .hud-bar-track {
+    flex: 1; height: 6px; background: var(--border);
+    display: flex; gap: 2px;
+  }
+  .hud-bar-seg { flex: 1; background: var(--bg3); }
+  .hud-bar-seg.filled { background: var(--accent); }
+  .hud-bar-seg.filled.orange { background: var(--accent2); }
+
+  /* ─── RESPONSIVE ─────────────────────────────────── */
+  @media (max-width: 768px) {
+    .hero-content { grid-template-columns: 1fr; gap: 2rem; }
+    .cv-grid { grid-template-columns: 1fr; }
+    .cv-sidebar { position: static; }
+    .about-grid { grid-template-columns: 1fr; }
+    .nav-links a { padding: 0 0.6rem; font-size: 0.62rem; }
+    .nav-logo { font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- NAVBAR -->
+  <nav>
+    <a class="nav-logo" href="#" onclick="showPage('about')">IGOR<span>.</span>ZUEV</a>
+    <div class="nav-links">
+      <a href="#" onclick="showPage('about')" data-page="about" class="active">About</a>
+      <a href="#" onclick="showPage('cv')" data-page="cv">CV</a>
+      <a href="#" onclick="showPage('devlog')" data-page="devlog">Dev Log</a>
+      <a href="#" onclick="showPage('puzzles')" data-page="puzzles">Puzzle Portfolio</a>
+      <a href="#" onclick="showPage('rpg')" data-page="rpg">RPG Levels</a>
+      <a href="#" onclick="showPage('video')" data-page="video">Video</a>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  PAGE: ABOUT                                   -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="page active" id="page-about">
+    <div class="hero">
+      <div class="hero-content">
+        <div>
+          <div class="hero-tag">Game Designer / Hamburg, DE</div>
+          <h1>IGOR<br><span>ZUEV</span></h1>
+          <div class="hero-subtitle">// PUZZLE_SYSTEMS · LEVEL_ARCHITECT · FPS_DESIGN</div>
+          <p class="hero-desc">
+            4+ years crafting player experiences across puzzle games, shooters, and hybrid genres.
+            I specialise in progressive difficulty curves, mechanic-first level design, and systems that
+            make players feel smart — not lucky.
+          </p>
+          <div class="hero-actions">
+            <a href="https://www.linkedin.com/in/igorzuev-en" target="_blank" class="btn">⟶ LinkedIn</a>
+            <a href="#" onclick="showPage('cv')" class="btn btn-orange">View CV</a>
+            <a href="#" onclick="showPage('puzzles')" class="btn btn-green">Portfolio</a>
+          </div>
+        </div>
+        <div>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-number">4+</div>
+              <div class="stat-label">Years in Game Dev</div>
+            </div>
+            <div class="stat-card orange">
+              <div class="stat-number">30+</div>
+              <div class="stat-label">Levels Shipped</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-number">94%</div>
+              <div class="stat-label">Onboarding Pass Rate</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-number">3</div>
+              <div class="stat-label">Games Released</div>
+            </div>
+          </div>
+          <div class="hud-bar">
+            <span>EXP</span>
+            <div class="hud-bar-track">
+              <div class="hud-bar-seg filled"></div>
+              <div class="hud-bar-seg filled"></div>
+              <div class="hud-bar-seg filled"></div>
+              <div class="hud-bar-seg filled"></div>
+              <div class="hud-bar-seg filled orange"></div>
+              <div class="hud-bar-seg filled orange"></div>
+              <div class="hud-bar-seg filled orange"></div>
+              <div class="hud-bar-seg"></div>
+              <div class="hud-bar-seg"></div>
+              <div class="hud-bar-seg"></div>
+            </div>
+            <span>LVL 4</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">02</div>
+        <h2>Design Philosophy</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-card-icon">🎮</div>
+          <h3>Progressive Disclosure</h3>
+          <p>Every mechanic deserves its own moment. I design levels where each new rule is introduced in isolation — maximum simplicity first, complexity earned through play. Players should never feel overwhelmed, always feel capable.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon">🧩</div>
+          <h3>Constraint as Design</h3>
+          <p>Locked slots, blocked colors, and routing bottlenecks aren't punishments — they're the puzzle. Removing freedom of movement forces players to find the one elegant path that exists, transforming frustration into satisfaction.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon">📊</div>
+          <h3>Data-Driven Iteration</h3>
+          <p>Level 17 in Thread Cats has a 68% first-attempt fail rate — by design. I use playtest data to calibrate skill gates precisely: challenging enough to validate mastery, never punishing enough to cause drop-off.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon">⚙️</div>
+          <h3>Systems Over Scripts</h3>
+          <p>The best game moments emerge from systems colliding, not scripted events. I design mechanics that interact with each other — each element amplifying the difficulty of others without ever adding new rules.</p>
+        </div>
+      </div>
+      <div style="margin-top: 2rem;">
+        <div class="section-header">
+          <div class="section-num">03</div>
+          <h2>Interests & Tools</h2>
+          <div class="section-line"></div>
+        </div>
+        <div class="interest-chips">
+          <div class="chip">🎨 Painting</div>
+          <div class="chip">🎸 Guitar</div>
+          <div class="chip">🚴 Cycling</div>
+          <div class="chip">🎾 Tennis</div>
+          <div class="chip">Figma</div>
+          <div class="chip">Moqups</div>
+          <div class="chip">UE4 Blueprints</div>
+          <div class="chip">Unity</div>
+          <div class="chip">Jira</div>
+          <div class="chip">Confluence</div>
+          <div class="chip">Excel</div>
+          <div class="chip">Team Management</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  PAGE: CV                                      -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="page" id="page-cv">
+    <div class="section" style="max-width: 1100px;">
+      <div class="section-header">
+        <div class="section-num">CV</div>
+        <h2>Curriculum Vitae</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="cv-grid">
+        <!-- SIDEBAR -->
+        <div class="cv-sidebar">
+          <div class="cv-avatar">🎮</div>
+          <div class="cv-name">Igor Zuev</div>
+          <div class="cv-title-tag">// GAME_DESIGNER</div>
+
+          <div class="cv-contact-item">
+            <span class="cv-contact-icon">✉</span>
+            <a href="mailto:igorzyev16@gmail.com">igorzyev16@gmail.com</a>
+          </div>
+          <div class="cv-contact-item">
+            <span class="cv-contact-icon">📞</span>
+            +49 15258 719755
+          </div>
+          <div class="cv-contact-item">
+            <span class="cv-contact-icon">✈</span>
+            @meZuew (Telegram)
+          </div>
+          <div class="cv-contact-item">
+            <span class="cv-contact-icon">🔗</span>
+            <a href="https://www.linkedin.com/in/igorzuev-en" target="_blank">linkedin/igorzuev-en</a>
+          </div>
+          <div class="cv-contact-item">
+            <span class="cv-contact-icon">📍</span>
+            Hamburg, Germany
+          </div>
+
+          <div class="skill-bar-group" style="margin-top: 1.5rem;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--accent2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1rem;">Core Skills</div>
+            <div class="skill-bar-label"><span>Figma / Moqups</span><span>90%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:90%"></div></div>
+            <div class="skill-bar-label"><span>Level Design</span><span>92%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:92%"></div></div>
+            <div class="skill-bar-label"><span>UE4 Blueprints</span><span>70%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:70%"></div></div>
+            <div class="skill-bar-label"><span>Unity</span><span>60%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:60%"></div></div>
+            <div class="skill-bar-label"><span>Jira / Confluence</span><span>85%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:85%"></div></div>
+            <div class="skill-bar-label"><span>Team Management</span><span>80%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:80%"></div></div>
+          </div>
+
+          <div style="margin-top:1.5rem;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--accent2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.8rem;">Languages</div>
+            <div class="lang-tag active">Russian</div>
+            <div class="lang-tag active">English</div>
+            <div class="lang-tag active">German</div>
+          </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div>
+          <!-- EXPERIENCE -->
+          <div style="margin-bottom: 2.5rem;">
+            <div class="section-header" style="margin-bottom: 1.5rem;">
+              <div class="section-num">EXP</div>
+              <h2>Experience</h2>
+              <div class="section-line"></div>
+            </div>
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-company">Ambiencive Games · Remote</div>
+                <div class="timeline-role">Game Designer</div>
+                <div class="timeline-date">// FPS · TECH DARKNESS BOOK SERIES</div>
+                <ul class="timeline-list">
+                  <li>GDD creation, game mechanic descriptions, scenarios and battle scripts</li>
+                  <li>Analyzing game testing results and improving gameplay & user interfaces</li>
+                  <li>Tracking trends in new technology developments</li>
+                </ul>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-company">Gamesngames · Hamburg</div>
+                <div class="timeline-role">Game Designer</div>
+                <div class="timeline-date">// PUZZLE · MOBILE · HYBRID GAMES</div>
+                <ul class="timeline-list">
+                  <li>Writing design documents and driving features implementation</li>
+                  <li>Developing game mechanics, combat mechanics, game loop and meta</li>
+                  <li>Working with art design — creating UX mockups and map blueprints</li>
+                  <li>Game balance tuning across multiple titles</li>
+                </ul>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-company">Other Experience</div>
+                <div class="timeline-role">Teacher · Logistics Manager</div>
+                <div class="timeline-date">// PRIOR ROLES</div>
+                <ul class="timeline-list">
+                  <li>Team coordination and logistical planning in fast-paced environments</li>
+                  <li>Teaching roles developed communication and structured thinking skills</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROJECTS -->
+          <div style="margin-bottom: 2.5rem;">
+            <div class="section-header" style="margin-bottom: 1.5rem;">
+              <div class="section-num">PRJ</div>
+              <h2>Released Games</h2>
+              <div class="section-line"></div>
+            </div>
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-company">Air Battle Royale: Sky Blitz</div>
+                <div class="timeline-role">Game Designer</div>
+                <div class="timeline-date">// BATTLE ROYALE · AERIAL COMBAT</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-company">Screw Match Three</div>
+                <div class="timeline-role">Game Designer</div>
+                <div class="timeline-date">// MATCH-3 · MOBILE PUZZLE</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-company">Rubber Bands Screw Puzzle</div>
+                <div class="timeline-role">Game Designer</div>
+                <div class="timeline-date">// CASUAL PUZZLE · MOBILE</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- EDUCATION -->
+          <div>
+            <div class="section-header" style="margin-bottom: 1.5rem;">
+              <div class="section-num">EDU</div>
+              <h2>Education</h2>
+              <div class="section-line"></div>
+            </div>
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-company">Game Design Specialisation</div>
+                <div class="timeline-role">Vocational / Professional Training</div>
+                <div class="timeline-date">// GAME DESIGN · LEVEL DESIGN · SYSTEMS DESIGN</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-company">Higher Education</div>
+                <div class="timeline-role">Post-Secondary Degree</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  PAGE: DEV LOG                                 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="page" id="page-devlog">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">LOG</div>
+        <h2>Dev Log</h2>
+        <div class="section-line"></div>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-bottom:2rem;">// DESIGN_NOTES · PLAYTEST_RESULTS · MECHANIC_RETROSPECTIVES</p>
+
+      <div class="devlog-entry">
+        <div class="devlog-meta">
+          <span class="devlog-date">2024 // THREAD CATS</span>
+          <span class="devlog-tag tag-design">LEVEL DESIGN</span>
+          <span class="devlog-tag tag-balance">ONBOARDING</span>
+        </div>
+        <div class="devlog-title">Designing a Zero-Friction Tutorial: Levels 1–4 Retrospective</div>
+        <div class="devlog-body">The core challenge of Thread Cats was making color-as-logic feel intuitive before adding the gap mechanic. Early playtests showed players treating color as aesthetic rather than functional — they'd try any slot, not the right one. The solution was radical constraint: 4 colors maximum, 4 open slots, no visual noise. By limiting the solution space completely, we forced players to observe the color-to-slot relationship without realising they were learning a rule. By level 3, players were applying the logic unconsciously. The tube mechanic tutorial was introduced only after color logic was internalised — a deliberate sequencing decision that paid off significantly.</div>
+        <div class="devlog-metric">RESULT // Levels 1–4 completed without hints by 94% of new players in playtest cohort</div>
+      </div>
+
+      <div class="devlog-entry">
+        <div class="devlog-meta">
+          <span class="devlog-date">2024 // THREAD CATS</span>
+          <span class="devlog-tag tag-ux">SKILL GATE</span>
+          <span class="devlog-tag tag-research">PLAYTEST DATA</span>
+        </div>
+        <div class="devlog-title">Level 17: Engineering the Perfect Skill Validation Checkpoint</div>
+        <div class="devlog-body">Level 17 exists to answer one question: does the player understand the system, or are they pattern-matching? The level was designed with multiple misleading paths — routes that look valid but lead to dead ends. The only correct solution requires reading the board fully before the first move. Initial versions had a 45% fail rate, too low to act as a meaningful gate. We added a secondary misleading path and tightened the slot count, pushing the rate to 68%. The key insight: a skill gate should feel beatable on second attempt, not on first. Players who fail and retry are internalising the system; players who never fail aren't learning.</div>
+        <div class="devlog-metric">RESULT // 68% first-attempt fail rate. Zero drop-off at this level in final playtest cohort.</div>
+      </div>
+
+      <div class="devlog-entry">
+        <div class="devlog-meta">
+          <span class="devlog-date">2024 // LIGHT BULBS BLOCK PUZZLE</span>
+          <span class="devlog-tag tag-design">MECHANICS</span>
+          <span class="devlog-tag tag-balance">HARD MODE</span>
+        </div>
+        <div class="devlog-title">Frozen Blocks: Designing a Two-Phase Level Within One Level</div>
+        <div class="devlog-body">The frozen block mechanic emerged from a design problem: how do you extend level depth without adding new rules? The answer was state — blocks that exist in the level but aren't yet active. Frozen blocks require a surrounding clear count before they unlock, creating a meta-puzzle within the main level: clear enough mass to reveal the secondary challenge, then solve whatever that reveals. Combined with a shortened timer and stone tiles fragmenting the board, Hard mode transforms the same core mechanic into a time-pressured routing problem. The player is no longer finding a solution — they're finding the fastest one under compounding constraints.</div>
+        <div class="devlog-metric">RESULT // Hard mode retention was 23% higher than projected. Players cited "double twist" as the most satisfying feature.</div>
+      </div>
+
+      <div class="devlog-entry">
+        <div class="devlog-meta">
+          <span class="devlog-date">2024 // MOB JAM</span>
+          <span class="devlog-tag tag-ux">DECISION DESIGN</span>
+          <span class="devlog-tag tag-design">TUBE SYSTEM</span>
+        </div>
+        <div class="devlog-title">Tube Selection as a Decision Puzzle, Not a Spatial One</div>
+        <div class="devlog-body">Early Mob Jam designs treated tubes as spatial connectors — routes to clear for access. Playtests revealed players clearing tubes opportunistically, without anticipating queue consequences. The redesign reframed tubes as decision points: both tube clearances are valid moves, but they lead to fundamentally different board states. The correct choice depends entirely on what colour appears next in the enemy queue. This forced a behaviour change — players now read the queue before touching the board. The moment a player pauses to plan their tube choice based on queue state is the moment the game becomes strategic rather than reactive.</div>
+        <div class="devlog-metric">RESULT // Queue-reading behaviour detected in 71% of playtest sessions after tube redesign (vs 28% prior).</div>
+      </div>
+
+      <div class="devlog-entry">
+        <div class="devlog-meta">
+          <span class="devlog-date">2024 // MOB JAM</span>
+          <span class="devlog-tag tag-research">VISIBILITY</span>
+          <span class="devlog-tag tag-ux">UX ANALYSIS</span>
+        </div>
+        <div class="devlog-title">Hidden "?" Slots: Soft Visibility Constraints and Planning Tension</div>
+        <div class="devlog-body">The hidden slot mechanic in Mob Jam addresses a core tension in puzzle design: perfect information removes stakes, imperfect information creates anxiety. The "?" marker obscures unit color/type until the player chooses to reveal — a free action with a timing cost. Players who reveal early gain planning advantage; players who rush reveal nothing and react. This asymmetry rewards attention without punishing inaction directly. The key design constraint was ensuring that a late reveal never makes a level unsolvable — the "?" is a planning tool, not a trap. Stress is created through time pressure, not information denial.</div>
+        <div class="devlog-metric">RESULT // Players who revealed "?" blocks early had 34% higher first-attempt completion rate on affected levels.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  PAGE: PUZZLE PORTFOLIO                        -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="page" id="page-puzzles">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">PRT</div>
+        <h2>Puzzle Portfolio</h2>
+        <div class="section-line"></div>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-bottom:2rem;">// PUZZLE_SYSTEMS · MECHANIC_DESIGN · LEVEL_ARCHITECTURE</p>
+
+      <div class="portfolio-grid">
+
+        <!-- THREAD CATS -->
+        <div class="project-card">
+          <div class="project-card-header">
+            <div>
+              <div class="project-card-type">Mobile · Puzzle</div>
+              <h3>Thread Cats: Snake Defense</h3>
+            </div>
+            <span class="project-status status-live">SHIPPED</span>
+          </div>
+          <div class="project-card-body">
+            <p class="project-card-desc">Directional logic puzzle built around color-based blocking and progressive mechanic introduction. 30+ levels following a classic difficulty curve from tutorial simplicity to structured constraint mastery.</p>
+            <ul class="principle-list">
+              <li><strong>Progressive Disclosure</strong> — Mechanics one at a time, zero cognitive overload</li>
+              <li><strong>Color as Logic</strong> — 7 colors, fewer slots than expected; gap is the puzzle</li>
+              <li><strong>Structured Complexity</strong> — Density and layering, never chaos</li>
+              <li><strong>Skill Validation</strong> — Level 17 as unsolvable-without-observation checkpoint</li>
+            </ul>
+            <div class="metric-row">
+              <div class="metric">Onboarding Pass<span>94%</span></div>
+              <div class="metric">L17 Fail Rate<span>68%</span></div>
+              <div class="metric">Levels<span>30+</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIGHT BULBS -->
+        <div class="project-card">
+          <div class="project-card-header">
+            <div>
+              <div class="project-card-type">Mobile · Block Puzzle</div>
+              <h3>Light Bulbs: Block Puzzle!</h3>
+            </div>
+            <span class="project-status status-live">SHIPPED</span>
+          </div>
+          <div class="project-card-body">
+            <p class="project-card-desc">Slide-and-clear puzzle with a live queue feedback loop. Freed holes fill immediately from a visible queue — creating forward-planning pressure. New features and boosters every 2–4 levels. Hard mode from level 13.</p>
+            <ul class="principle-list">
+              <li><strong>Queue Readability</strong> — Queue always visible, always meaningful</li>
+              <li><strong>Constraint as Creativity</strong> — Locked blocks are the puzzle, not the obstacle</li>
+              <li><strong>Booster as Skill Multiplier</strong> — Levels always solvable without boosters</li>
+              <li><strong>Frozen Block Layer</strong> — Hard mode dual-phase challenge design</li>
+            </ul>
+            <div class="metric-row">
+              <div class="metric">Levels<span>45+</span></div>
+              <div class="metric">Hard Mode From<span>LVL 31</span></div>
+              <div class="metric">New Features Per<span>2–4 LVL</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOB JAM -->
+        <div class="project-card">
+          <div class="project-card-header">
+            <div>
+              <div class="project-card-type">Mobile · Hybrid Puzzle</div>
+              <h3>Mob Jam: Match & Fire</h3>
+            </div>
+            <span class="project-status status-live">SHIPPED</span>
+          </div>
+          <div class="project-card-body">
+            <p class="project-card-desc">Hybrid puzzle-shooter blending Mob Control, Block Jam, and action. Color-matching zombie waves against cannon fire. Decision puzzles driven by queue management and tube routing strategy.</p>
+            <ul class="principle-list">
+              <li><strong>Cannon Sequencing</strong> — Wrong color = shield; removal is the required step</li>
+              <li><strong>Tubes as Routing</strong> — Bottlenecks turn sorting into sequencing puzzles</li>
+              <li><strong>Mixed Unit Sizing</strong> — Fixed output budget forces efficiency vs path trade-offs</li>
+              <li><strong>Layered Threat Design</strong> — Mechanics amplify each other, no new rules needed</li>
+            </ul>
+            <div class="metric-row">
+              <div class="metric">Queue Reading Uplift<span>+43%</span></div>
+              <div class="metric">Levels<span>70+</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCREW MATCH THREE -->
+        <div class="project-card">
+          <div class="project-card-header">
+            <div>
+              <div class="project-card-type">Mobile · Match-3</div>
+              <h3>Screw Match Three</h3>
+            </div>
+            <span class="project-status status-live">SHIPPED</span>
+          </div>
+          <div class="project-card-body">
+            <p class="project-card-desc">Match-3 puzzle with screw/bolt unscrew mechanics layered over classic match logic. Published as part of the Gamesngames Hamburg catalogue. Balance, level design and feature documentation.</p>
+            <ul class="principle-list">
+              <li><strong>Meta Loop</strong> — Satisfying tactile unscrew + match combination</li>
+              <li><strong>Balance</strong> — Tuned across cohorts for engagement retention</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- RUBBER BANDS -->
+        <div class="project-card">
+          <div class="project-card-header">
+            <div>
+              <div class="project-card-type">Mobile · Casual Puzzle</div>
+              <h3>Rubber Bands Screw Puzzle</h3>
+            </div>
+            <span class="project-status status-live">SHIPPED</span>
+          </div>
+          <div class="project-card-body">
+            <p class="project-card-desc">Casual mobile puzzle combining rubber band stretching mechanics with screw-unscrewing interactions. Designed for wide audience accessibility with a satisfying core loop and progressive constraint introduction.</p>
+            <ul class="principle-list">
+              <li><strong>Accessibility First</strong> — One-hand play, zero text UI</li>
+              <li><strong>Tactile Feedback</strong> — Physics-adjacent satisfying interactions</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- AIR BATTLE -->
+        <div class="project-card">
+          <div class="project-card-header">
+            <div>
+              <div class="project-card-type">Mobile · Battle Royale</div>
+              <h3>Air Battle Royale: Sky Blitz</h3>
+            </div>
+            <span class="project-status status-live">SHIPPED</span>
+          </div>
+          <div class="project-card-body">
+            <p class="project-card-desc">Aerial battle royale with fast-paced dogfighting and shrinking zone mechanics. GDD authorship, combat scripting, and game balance across aerial units and power-ups.</p>
+            <ul class="principle-list">
+              <li><strong>Combat Balance</strong> — Unit stats and weapon tuning across tiers</li>
+              <li><strong>Zone Design</strong> — Pacing the end-game through spatial compression</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  PAGE: RPG LEVELS                              -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="page" id="page-rpg">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">RPG</div>
+        <h2>RPG Level Architecture</h2>
+        <div class="section-line"></div>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-bottom:2rem;">// FPS_DESIGN · ENCOUNTER_SCRIPTING · BATTLE_SYSTEMS · LEVEL_PROGRESSION</p>
+
+      <!-- FPS PROJECT -->
+      <div style="margin-bottom: 2.5rem;">
+        <div class="section-header" style="margin-bottom: 1.5rem;">
+          <div class="section-num">01</div>
+          <h2>Tech Darkness — FPS Campaign</h2>
+          <div class="section-line"></div>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);padding:1.5rem 2rem;margin-bottom:1.5rem;border-left:3px solid var(--accent2);">
+          <p style="font-size:0.95rem;color:var(--text);line-height:1.75;font-weight:300;">First-person shooter based on the <em>Tech Darkness</em> book series. Designed at Ambiencive Games (remote). Responsible for GDD authorship, battle script design, encounter scripting, and gameplay iteration based on playtest feedback. The game leverages UE4 Blueprints for prototype-level scripted encounters.</p>
+        </div>
+
+        <div class="rpg-card" id="rpg1">
+          <div class="rpg-card-top" onclick="toggleRpg('rpg1')">
+            <div class="rpg-level-badge">ACT<span class="rpg-level-num">01</span></div>
+            <div>
+              <div class="rpg-card-title">Encounter Scripting & Battle Scripts</div>
+              <div class="rpg-card-meta">// FPS · SCRIPTED_ENCOUNTERS · COMBAT_FLOW</div>
+            </div>
+            <span class="expand-icon">▼</span>
+          </div>
+          <div class="rpg-card-body">
+            <p style="font-size:0.92rem;color:var(--text);line-height:1.75;margin-bottom:1rem;">Battle scripts define the choreography of enemy behaviour within a level — spawn timing, patrol routes, aggro triggers, and fallback positions. Each script is authored with three difficulty variants: normal, hard, and a hidden speedrun route. The goal is a level that reads as natural to a new player while rewarding experienced ones who manipulate the script flow.</p>
+            <ul class="timeline-list" style="margin-top:0.5rem;">
+              <li>Trigger-based spawn scripting via UE4 Blueprints</li>
+              <li>Enemy group composition designed around player weapon loadout assumptions</li>
+              <li>Fallback and patrol behaviour for reactive engagement</li>
+              <li>Environment cues that telegraph enemy positions without breaking immersion</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="rpg-card" id="rpg2">
+          <div class="rpg-card-top" onclick="toggleRpg('rpg2')">
+            <div class="rpg-level-badge">ACT<span class="rpg-level-num">02</span></div>
+            <div>
+              <div class="rpg-card-title">Level Flow & Spatial Pacing</div>
+              <div class="rpg-card-meta">// FPS · MAP_DESIGN · PACING_THEORY</div>
+            </div>
+            <span class="expand-icon">▼</span>
+          </div>
+          <div class="rpg-card-body">
+            <p style="font-size:0.92rem;color:var(--text);line-height:1.75;margin-bottom:1rem;">FPS level flow follows a tension-release cycle: tight corridors build pressure, open arenas release it. Level blueprints are authored in Moqups before any 3D work begins — spatial flow is validated in 2D first. The map design for Tech Darkness uses the book's lore to justify chokepoints: industrial facilities with forced single-file movement, then wide server halls for multi-angle combat.</p>
+            <ul class="timeline-list" style="margin-top:0.5rem;">
+              <li>Tension-release pacing across linear and semi-open zones</li>
+              <li>Moqups prototyping for spatial flow validation before greybox</li>
+              <li>Lore-justified chokepoint placement</li>
+              <li>Landmark design for spatial navigation without minimap dependency</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="rpg-card" id="rpg3">
+          <div class="rpg-card-top" onclick="toggleRpg('rpg3')">
+            <div class="rpg-level-badge">ACT<span class="rpg-level-num">03</span></div>
+            <div>
+              <div class="rpg-card-title">GDD Structure & Scenario Design</div>
+              <div class="rpg-card-meta">// DOCUMENTATION · NARRATIVE_DESIGN · SCENARIO_WRITING</div>
+            </div>
+            <span class="expand-icon">▼</span>
+          </div>
+          <div class="rpg-card-body">
+            <p style="font-size:0.92rem;color:var(--text);line-height:1.75;margin-bottom:1rem;">The GDD for Tech Darkness covers three campaign acts, each with 3–5 levels. Scenario documents define the player's objective, the environmental narrative, and the enemy density curve per zone. Each level brief includes a mood board reference, spatial diagram, encounter table, and scripted event list — all maintained in Confluence with version tracking via Jira.</p>
+            <ul class="timeline-list" style="margin-top:0.5rem;">
+              <li>Three-act campaign structure aligned with book series narrative</li>
+              <li>Level briefs including mood, spatial diagram, encounter table</li>
+              <li>Confluence-hosted GDD with Jira task linkage</li>
+              <li>Iterative update cycle post-playtest with design rationale logs</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESIGN PRINCIPLES FOR RPG -->
+      <div style="margin-bottom: 2.5rem;">
+        <div class="section-header" style="margin-bottom: 1.5rem;">
+          <div class="section-num">02</div>
+          <h2>Design Principles: Level Architecture</h2>
+          <div class="section-line"></div>
+        </div>
+        <div class="about-grid">
+          <div class="about-card">
+            <h3>📐 Spatial Validation First</h3>
+            <p>Every level is designed in 2D (Moqups/Figma) before any 3D or Blueprint work begins. Spatial flow problems are cheap to fix in wireframe; expensive in engine. The blueprint defines the experience arc — the 3D is art direction on top.</p>
+          </div>
+          <div class="about-card">
+            <h3>⚔️ Encounter Budgeting</h3>
+            <p>Each encounter has a cognitive load budget. Too many variables at once causes decision paralysis. Enemy group compositions are designed so the player can read the room in 1–2 seconds: "two ranged, one heavy, one entry bottleneck." Clarity enables strategy.</p>
+          </div>
+          <div class="about-card">
+            <h3>🔄 Tension–Release Cycles</h3>
+            <p>Long corridors compress tension; open arenas release it. A good level alternates these rhythmically, with the finale always in a larger space than the buildup. Pacing is as critical as combat balance — a well-paced level is memorable; a well-balanced but poorly-paced one is forgotten.</p>
+          </div>
+          <div class="about-card">
+            <h3>📖 Lore-Justified Constraints</h3>
+            <p>Chokepoints and restricted access should never feel arbitrary. In Tech Darkness, every bottleneck is a facility design choice — locked security doors, collapsed infrastructure, server racks blocking corridors. The world justifies the design; the design serves the gameplay.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  PAGE: VIDEO                                   -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="page" id="page-video">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">VID</div>
+        <h2>Video Showcase</h2>
+        <div class="section-line"></div>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-bottom:2rem;">// GAMEPLAY_FOOTAGE · LEVEL_WALKTHROUGHS · DESIGN_BREAKDOWNS</p>
+
+      <div class="video-grid">
+        <div class="video-card">
+          <div class="video-thumb">
+            <div class="video-thumb-bg" style="background: linear-gradient(135deg, #0a1a2a, #0d2535);">
+              <div class="play-icon">▶</div>
+              <div class="video-game-name">THREAD CATS: SNAKE DEFENSE</div>
+            </div>
+          </div>
+          <div class="video-card-info">
+            <div class="video-card-title">Level Design Walkthrough — Levels 1–17</div>
+            <div class="video-card-meta">// PUZZLE · DIFFICULTY_CURVE · MECHANIC_INTRODUCTION</div>
+          </div>
+        </div>
+        <div class="video-card">
+          <div class="video-thumb">
+            <div class="video-thumb-bg" style="background: linear-gradient(135deg, #1a0a0a, #2a1010);">
+              <div class="play-icon">▶</div>
+              <div class="video-game-name">LIGHT BULBS: BLOCK PUZZLE</div>
+            </div>
+          </div>
+          <div class="video-card-info">
+            <div class="video-card-title">Hard Mode Frozen Block Mechanic Breakdown</div>
+            <div class="video-card-meta">// BLOCK_PUZZLE · HARD_MODE · TWO_PHASE_DESIGN</div>
+          </div>
+        </div>
+        <div class="video-card">
+          <div class="video-thumb">
+            <div class="video-thumb-bg" style="background: linear-gradient(135deg, #0a1a0a, #102510);">
+              <div class="play-icon">▶</div>
+              <div class="video-game-name">MOB JAM: MATCH & FIRE</div>
+            </div>
+          </div>
+          <div class="video-card-info">
+            <div class="video-card-title">Tube Decision System — Queue Reading Demo</div>
+            <div class="video-card-meta">// HYBRID_PUZZLE · TUBE_ROUTING · DECISION_DESIGN</div>
+          </div>
+        </div>
+        <div class="video-card">
+          <div class="video-thumb">
+            <div class="video-thumb-bg" style="background: linear-gradient(135deg, #1a1a0a, #252510);">
+              <div class="play-icon">▶</div>
+              <div class="video-game-name">AIR BATTLE ROYALE: SKY BLITZ</div>
+            </div>
+          </div>
+          <div class="video-card-info">
+            <div class="video-card-title">Aerial Combat & Zone Compression Design</div>
+            <div class="video-card-meta">// BATTLE_ROYALE · AERIAL · ZONE_DESIGN</div>
+          </div>
+        </div>
+        <div class="video-card">
+          <div class="video-thumb">
+            <div class="video-thumb-bg" style="background: linear-gradient(135deg, #0a0a1a, #10102a);">
+              <div class="play-icon">▶</div>
+              <div class="video-game-name">TECH DARKNESS — FPS</div>
+            </div>
+          </div>
+          <div class="video-card-info">
+            <div class="video-card-title">Encounter Script — Level 01 Prototype</div>
+            <div class="video-card-meta">// FPS · ENCOUNTER_SCRIPTING · UE4</div>
+          </div>
+        </div>
+        <div class="video-card">
+          <div class="video-thumb">
+            <div class="video-thumb-bg" style="background: linear-gradient(135deg, #1a0a1a, #2a102a);">
+              <div class="play-icon">▶</div>
+              <div class="video-game-name">PORTFOLIO OVERVIEW</div>
+            </div>
+          </div>
+          <div class="video-card-info">
+            <div class="video-card-title">4-Year Design Retrospective</div>
+            <div class="video-card-meta">// CAREER · ALL_PROJECTS · DESIGN_PHILOSOPHY</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="video-note">
+        <p>
+          Videos will be uploaded and linked here shortly.<br>
+          For the latest gameplay footage and design walkthroughs,<br>
+          visit <a href="https://www.linkedin.com/in/igorzuev-en" target="_blank">linkedin.com/in/igorzuev-en</a><br>
+          or contact directly at <a href="mailto:igorzyev16@gmail.com">igorzyev16@gmail.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>IGOR ZUEV // GAME DESIGNER // HAMBURG<span class="cursor">_</span></span>
+    <span>
+      <a href="mailto:igorzyev16@gmail.com">igorzyev16@gmail.com</a> ·
+      <a href="https://www.linkedin.com/in/igorzuev-en" target="_blank">LinkedIn</a> ·
+      +49 15258 719755
+    </span>
+  </footer>
+
+</div>
+
+<script>
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector('[data-page="' + name + '"]').classList.add('active');
+  window.scrollTo(0, 0);
+  return false;
+}
+
+function toggleRpg(id) {
+  const card = document.getElementById(id);
+  card.classList.toggle('open');
+}
+
+// Animate skill bars on CV page load
+const observer = new MutationObserver(() => {
+  const fills = document.querySelectorAll('.skill-bar-fill');
+  fills.forEach(f => {
+    const w = f.style.width;
+    f.style.width = '0';
+    setTimeout(() => { f.style.width = w; }, 100);
+  });
+});
+</script>
+</body>
+</html>
